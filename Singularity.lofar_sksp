@@ -1,8 +1,8 @@
-Bootstrap: shub
-From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
+#Bootstrap: shub
+#From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
 # If building from a base image locally enable this instead.
-#Bootstrap: localimage
-#From: lofar_sksp_fedora27_base.sif
+Bootstrap: localimage
+From: lofar_sksp_base_newsclean.sif
 
 %environment
     export PYTHONPATH=
@@ -27,7 +27,7 @@ From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
 	export CASACORE_VERSION=v2.4.1
 	# Leave at latest, release versions crash for some reason.
 	export CASAREST_VERSION=latest
-    export DPPP_VERSION=v4.2
+    export DPPP_VERSION=latest
 	export DYSCO_VERSION=v1.0.1
 	export LOFAR_VERSION=3_2_18
 	export LOSOTO_VERSION=2.0
@@ -42,10 +42,10 @@ From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
 
     export CFLAGS="-mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512ifma -mno-avx512vbmi"
     export CXXFLAGS="-std=c++11 -mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512ifma -mno-avx512vbmi"
-    export CPLUS_INCLUDE_PATH="/usr/include/openmpi-x86_64:/usr/include/c++/9:$CPLUS_INCLUDE_PATH:/usr/include/python2.7:$INSTALLDIR/casacore/include:/usr/include/boost:/usr/include/cfitsio"
-    export CPATH="/usr/include/openmpi-x86_64/:/opt/intel/mkl/include:${INSTALLDIR}/casacore/include:$INSTALLDIR/LOFARBeam/include:$INSTALLDIR/idg/include:$INSTALLDIR/aoflagger/include:$CPATH"
-    export CMAKE_PREFIX_PATH="$INSTALLDIR/aoflagger:$INSTALLDIR/casacore:$INSTALLDIR/lofar:$INSTALLDIR/LOFARBeam:/usr/lib64/openmpi"
-    export LD_LIBRARY_PATH="$INSTALLDIR/aoflagger/lib:$INSTALLDIR/casacore/lib:$INSTALLDIR/idg/lib:$INSTALLDIR/LOFARBeam/lib:/usr/lib64/openmpi/lib/:LD_LIBRARY_PATH"
+    export CPLUS_INCLUDE_PATH="/usr/include/openmpi-x86_64:/usr/include/c++/9:$CPLUS_INCLUDE_PATH:/usr/include/python2.7:$INSTALLDIR/casacore/include:/usr/include/boost:/usr/include/cfitsio:$INSTALLDIR/EveryBeam/include"
+    export CPATH="/usr/include/openmpi-x86_64/:/opt/intel/mkl/include:${INSTALLDIR}/casacore/include:$INSTALLDIR/LOFARBeam/include:$INSTALLDIR/idg/include:$INSTALLDIR/aoflagger/include:$INSTALLDIR/EveryBeam/include:$CPATH"
+    export CMAKE_PREFIX_PATH="$INSTALLDIR/aoflagger:$INSTALLDIR/casacore:$INSTALLDIR/lofar:$INSTALLDIR/LOFARBeam:/usr/lib64/openmpi:$INSTALLDIR/EveryBeam"
+    export LD_LIBRARY_PATH="$INSTALLDIR/aoflagger/lib:$INSTALLDIR/casacore/lib:$INSTALLDIR/idg/lib:$INSTALLDIR/LOFARBeam/lib:/usr/lib64/openmpi/lib/:$INSTALLDIR/EveryBeam/lib:LD_LIBRARY_PATH"
     export PATH="/usr/lib64/openmpi/bin:$PATH"
     export make=`which make`
     export OLD_PYTHONPATH=$PYTHONPATH
@@ -66,6 +66,7 @@ From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
     dnf -y install rsync
     dnf -y install openmpi openmpi-devel
     dnf -y install htop
+    dnf -y install python3-pybind11 pybind11-devel
     #module load mpi
 
     #
@@ -158,7 +159,8 @@ From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
 	# Install Dysco
 	#
 	mkdir -p $INSTALLDIR/dysco/build
-	cd $INSTALLDIR/dysco && git clone https://github.com/aroffringa/dysco.git src && cd src
+	cd $INSTALLDIR/dysco && git clone https://github.com/aroffringa/dysco.git src
+    if [ "$Dysco_VERSION" != "latest" ]; then cd $INSTALLDIR/dysco/src && git checkout tags/${Dysco_VERSION}; fi
 	cd $INSTALLDIR/dysco/build && cmake -DCMAKE_INSTALL_PREFIX=$INSTALLDIR/dysco -DCASACORE_ROOT_DIR=$INSTALLDIR/casacore -DPORTABLE=True ../src && $make -s -j $J && $make install
     cd $INSTALLDIR
     rm -rf $INSTALLDIR/dysco/build
@@ -224,12 +226,23 @@ From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
     rm -rf $INSTALLDIR/LOFARBeam/src
 
     #
+    # Install EveryBeam library
+    #
+    echo Installing EveryBeam
+    mkdir -p $INSTALLDIR/EveryBeam/build
+    cd $INSTALLDIR/EveryBeam
+    git clone https://git.astron.nl/RD/EveryBeam.git src
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=$INSTALLDIR/EveryBeam ../src
+    $make -j $J
+    $make install
+
+    #
     # Install DPPP
     #
     mkdir -p $INSTALLDIR/DPPP/build
     git clone https://github.com/lofar-astron/DP3.git $INSTALLDIR/DPPP/src
-    cd $INSTALLDIR/DPPP/src
-    git checkout tags/${DPPP_VERSION}
+    if [ "$DPPP_VERSION" != "latest" ]; then cd $INSTALLDIR/DPPP/src && git checkout tags/${DPPP_VERSION}; fi
     cd $INSTALLDIR/DPPP/build
     cmake3 -DCMAKE_CXX_FLAGS="-D_GLIB_USE_CXX_ABI=1 -DBOOST_NO_CXX11_SCOPED_ENUMS" -DCMAKE_INSTALL_PREFIX:PATH=$INSTALLDIR/DPPP -DLOFAR_STATION_RESPONSE_DIR:PATH=$INSTALLDIR/lofar/include -DLOFAR_STATION_RESPONSE_LIB:FILEPATH=$INSTALLDIR/lofar/lib/libstationresponse.so -DIDGAPI_LIBRARIES=$INSTALLDIR/idg/lib/libidg-api.so -DIDGAPI_INCLUDE_DIRS=$INSTALLDIR/idg/include -DAOFLAGGER_INCLUDE_DIR=$INSTALLDIR/aoflagger/include -DAOFLAGGER_LIB=$INSTALLDIR/aoflagger/lib/libaoflagger.so ../src
     $make -s -j $J && $make install
@@ -303,16 +316,16 @@ From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
     #
     mkdir $INSTALLDIR/wsclean
     if [ "$WSCLEAN_VERSION" != "latest" ]; then cd ${INSTALLDIR}/wsclean && wget http://downloads.sourceforge.net/project/wsclean/wsclean-${WSCLEAN_VERSION}/wsclean-${WSCLEAN_VERSION}.tar.bz2 && tar -xjf wsclean-${WSCLEAN_VERSION}.tar.bz2 && cd wsclean-${WSCLEAN_VERSION}; fi
-    if [ "$WSCLEAN_VERSION" = "latest" ]; then cd ${INSTALLDIR}/wsclean && git clone git://git.code.sf.net/p/wsclean/code src && cd src && cd wsclean; fi
+    if [ "$WSCLEAN_VERSION" = "latest" ]; then cd ${INSTALLDIR}/wsclean && git clone https://gitlab.com/aroffringa/wsclean.git && cd wsclean; fi
     mkdir build && cd build
     # Switch to mpicc for a minute
     export CC=`which mpicc`
     export CXX=`which mpic++`
     cmake -DCMAKE_INSTALL_PREFIX=$INSTALLDIR/wsclean -DPORTABLE=True -DIDGAPI_LIBRARIES=$INSTALLDIR/idg/lib/libidg-api.so -DIDGAPI_INCLUDE_DIRS=$INSTALLDIR/idg/include ..
-    $make -j ${J}
-    $make install
+    #$make -j ${J}
+    #$make install
     cd $INSTALLDIR
-    rm -rf $INSTALLDIR/wsclean/src
+    rm -rf $INSTALLDIR/wsclean/wsclean
     # Switch back to normal compilers
     export CC=`which gcc`
 	export CXX=`which g++`
@@ -358,7 +371,7 @@ From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
 	echo export PATH=\$INSTALLDIR/lofar/bin:\$PATH  >> $INSTALLDIR/init.sh
 	echo export PATH=\$INSTALLDIR/wsclean/bin:\$PATH  >> $INSTALLDIR/init.sh
     echo export PATH=/usr/lib64/openmpi/bin:\$PATH >> $INSTALLDIR/init.sh
-	echo export LD_LIBRARY_PATH=\$INSTALLDIR/aoflagger/lib:\$INSTALLDIR/casacore/lib:\$INSTALLDIR/DPPP/lib:\$INSTALLDIR/dysco/lib:\$INSTALLDIR/idg/lib:\$INSTALLDIR/lofar/lib:\$INSTALLDIR/lofar/lib64:\$INSTALLDIR/LOFARBeam/lib:\$LD_LIBRARY_PATH  >> $INSTALLDIR/init.sh
+	echo export LD_LIBRARY_PATH=\$INSTALLDIR/aoflagger/lib:\$INSTALLDIR/casacore/lib:\$INSTALLDIR/DPPP/lib:\$INSTALLDIR/dysco/lib:\$INSTALLDIR/idg/lib:\$INSTALLDIR/lofar/lib:\$INSTALLDIR/lofar/lib64:\$INSTALLDIR/LOFARBeam/lib:\$INSTALLDIR/EverBeam/lib:\$LD_LIBRARY_PATH  >> $INSTALLDIR/init.sh
     echo export LD_LIBRARY_PATH=/opt/intel/mkl/lib/intel64:\$LD_LIBRARY_PATH >> $INSTALLDIR/init.sh
     echo export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:\$LD_LIBRARY_PATH >> $INSTALLDIR/init.sh
 	echo export OPENBLAS_NUM_THREADS=64 >> $INSTALLDIR/init.sh
