@@ -236,6 +236,7 @@ From: lofar_sksp_base_newsclean.sif
     cmake -DCMAKE_INSTALL_PREFIX=$INSTALLDIR/EveryBeam ../src
     $make -j $J
     $make install
+    cp $INSTALLDIR/EveryBeam/src/cpp/fieldresponse.h $INSTALLDIR/EveryBeam/include/EveryBeam/
 
     #
     # Install DPPP
