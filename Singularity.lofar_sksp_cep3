@@ -2,7 +2,7 @@
 #From: tikk3r/lofar-grid-hpccloud:lofar_sksp_base
 # If building from a base image locally enable this instead.
 Bootstrap: localimage
-From: lofar-grid-hpccloud_lofar_sksp_base.sif
+From: lofar_sksp_base_cep3.sif
 
 %environment
     export PYTHONPATH=
