@@ -87,11 +87,11 @@ From: tikker/remote-builds/rb-608fc47136a73749849bd324:latest
     export CMAKE_PREFIX_PATH=/usr/local/cuda/lib64:/opt/intel/mkl/lib/intel64:$CMAKE_PREFIX_PATH
     export CPATH=/usr/local/cuda/include:/opt/intel/mkl/include:$CPATH
     # Use these flags instead for an architecture optimized build.
-    export CFLAGS="-march=core-avx-i -mtune=core-avx-i"
-    export CXXFLAGS="-march=core-avx-i -mtune=core-avx-i"
+    # export CFLAGS="-march=core-avx-i -mtune=core-avx-i"
+    # export CXXFLAGS="-march=core-avx-i -mtune=core-avx-i"
     # Disable AVX512 instructions and build a generic architecture.
-    export CFLAGS="-mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512ifma -mno-avx512vbmi"
-    export CXXFLAGS="-mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512ifma -mno-avx512vbmi"
+    export CFLAGS="-mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512ifma -mno-avx512vbmi -march=core-avx-i -mtune=core-avx-i"
+    export CXXFLAGS="-mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512ifma -mno-avx512vbmi -march=core-avx-i -mtune=core-avx-i"
 
     ###################
     # Source installs #
