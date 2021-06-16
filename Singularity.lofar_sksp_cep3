@@ -240,7 +240,7 @@ From: lofar_sksp_base_cep3.sif
     cd $INSTALLDIR/lofarstman
     git clone https://github.com/lofar-astron/LofarStMan.git
     cd LofarStMan
-    mkdir build && cd build
+    mkdir build && cp CMakeLists.txt ./build/ && cd build
     cmake -DCASACORE_ROOT_DIR=$INSTALLDIR/casacore -DCMAKE_INSTALL_PREFIX=$INSTALLDIR/lofarstman
     make -j$J
     make install
