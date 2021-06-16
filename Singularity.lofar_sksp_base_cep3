@@ -1,5 +1,5 @@
-Bootstrap: library
-From: tikker/remote-builds/rb-608fc47136a73749849bd324:latest
+Bootstrap: docker 
+From: fedora:31
 
 %environment
     export INSTALLDIR=/opt/lofar
