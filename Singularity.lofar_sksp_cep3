@@ -122,7 +122,7 @@ From: lofar_sksp_base_cep3.sif
     #
     mkdir -p $INSTALLDIR/difmap
     cd $INSTALLDIR/difmap
-    wget ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5e.tar.gz
+    wget https://github.com/alexmatze/astro/raw/master/other_software/difmap2.5e.tar.gz
     tar xf difmap2.5e.tar.gz
     cd uvf_difmap
     wget https://raw.githubusercontent.com/nealjackson/loop3_difmap/master/corplt.c -O difmap_src/corplt.c
