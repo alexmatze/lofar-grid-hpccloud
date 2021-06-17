@@ -19,5 +19,19 @@ To build a full LOFAR Singularity image, do the following:
 
 Pre-built containers are public hosted at [SURFSara](https://lofar-webdav.grid.sara.nl/software/shub_mirror/tikk3r/lofar-grid-hpccloud/). Sort by date to find the latest container there.
 
+
+
+If you intend to build a container for CEP3, do the following:
+1) Build Singularity.lofarbase
+
+    sudo singularity build lofar_sksp_base_cep3.sif Singularity.lofar_sksp_base_cep3
+
+2) Build Singularity.lofar (use the `From: localimage` part instead of the Singularity Hub part)
+
+    sudo singularity build lofar_sksp_cep3.sif Singularity.lofar_sksp_cep3
+
+
+
+
 Visit the  [wiki](https://github.com/tikk3r/lofar-grid-hpccloud/wiki) for more detailed information and build instructions.
 
